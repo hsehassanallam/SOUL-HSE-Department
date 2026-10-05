@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSE App - Hassan Allam</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* ------------------------------------------- */
+        /* خلفية التطبيق باستخدام الرابط المباشر الخاص بك */
+        /* ------------------------------------------- */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #111d2b; 
+            background-image: url('https://i.postimg.cc/x1045dTF/bg-png.png'); 
+            background-size: cover; 
+            background-position: center; 
+            background-attachment: fixed; 
+            background-repeat: no-repeat;
+            margin: 0; 
+            padding: 20px; 
+            position: relative;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* ------------------------------------------- */
+        /* تصميم شاشة تسجيل الدخول */
+        /* ------------------------------------------- */
+        #login-section {
+            max-width: 440px; 
+            margin: 15vh auto 0 auto; 
+            background: #fff; 
+            padding: 0; 
+            border-radius: 4px; 
+            box-shadow: 0 12px 24px rgba(0,0,0,0.4); 
+            overflow: hidden;
+            text-align: left; 
+            direction: ltr; 
+        }
+
+        .login-content { padding: 40px; }
+
+        .login-content h1 {
+            font-family: 'Times New Roman', Times, serif;
+            color: #2b3b4e;
+            font-size: 22px;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+        }
+
+        .project-name {
+            color: #555;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+        .login-content h2 {
+            text-align: left;
+            color: #1b1b1b;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+            font-weight: 600;
+        }
+
+        #login-section input[type="text"], 
+        #login-section input[type="password"] { 
+            width: 100%; padding: 5px 0; margin: 10px 0 20px; 
+            border: none; border-bottom: 1px solid #666; 
+            border-radius: 0; box-sizing: border-box; 
+            font-size: 15px; background: transparent; outline: none;
+        }
+        #login-section input:focus { border-bottom: 2px solid #005b9f; }
+
+        .login-btn-container { display: flex; justify-content: flex-end; margin-top: 10px; }
+
+        #login-section .login-btn { 
+            background-color: #005b9f; color: white; border: none;
+            padding: 8px 30px; font-size: 15px; cursor: pointer; border-radius: 3px;
+        }
+        #login-section .login-btn:hover { background-color: #004a80; }
+
+        #login-error { color: #d13438; font-size: 13px; margin-top: 5px; margin-bottom: 15px; display: none; font-weight: bold;}
+
+        .login-footer {
+            background-color: #f3f2f1; padding: 25px 40px; font-size: 13px; color: #444; line-height: 1.6;
+        }
+        .login-footer p { margin: 0; }
+        
+        .developer-info {
+            margin-top: 15px !important;
+            font-style: italic;
+            color: #666;
+        }
+        
+        .developer-email {
+            margin-top: 5px !important;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+        }
+
+        /* ------------------------------------------- */
+        /* تصميم باقي شاشات التطبيق (متناسق مع الثيم) */
+        /* ------------------------------------------- */
+        .app-container { 
+            max-width: 1000px; 
+            margin: 5vh auto; 
+            background: rgba(255, 255, 255, 0.96); 
+            padding: 35px; 
+            border-radius: 8px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4); 
+            direction: rtl; 
+        }
+        
+        .app-container h2 { text-align: center; color: #111d2b; margin-bottom: 25px; font-weight: bold; }
+        
+        /* أزرار القائمة الرئيسية بشكلها الجديد المتناسق */
+        .menu-btn {
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            width: 100%; 
+            padding: 20px; 
+            margin-bottom: 20px;
+            background-color: #1a2b3c; /* كحلي متناسق مع الخلفية */
+            color: white;
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+        }
+        
+        .menu-btn:hover { background-color: #111d2b; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        
+        /* ألوان تمييز خفيفة للأزرار */
+        .induction-btn { border-right: 6px solid #005b9f; }
+        .equipment-btn { border-right: 6px solid #d1a100; } /* أصفر ذهبي متناسق مع الأزرق */
+        
+        .btn-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; }
+        .btn-subtitle { font-size: 14px; font-weight: normal; color: #b0c4de; /* لون أزرق فاتح هادئ للنص الفرعي */ }
+        
+        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-btn, .refresh-btn { padding: 10px 15px; font-size: 16px; border-radius: 5px; color: white; border: none; cursor: pointer; transition: background 0.3s; }
+        .back-btn { background-color: #6c757d; }
+        .back-btn:hover { background-color: #5a6268; }
+        
+        /* زر تحديث البيانات بألوان الثيم */
+        .refresh-btn { background-color: #005b9f; color: white; font-weight: bold; }
+        .refresh-btn:hover { background-color: #004a80; }
+
+        .app-container input[type="text"] { width: 100%; padding: 15px; margin: 10px 0 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 18px; }
+        .search-hint { font-size: 13px; color: #555; margin-bottom: 20px; display: block; font-weight: bold; }
+
+        #loading { text-align: center; color: #fff; font-weight: bold; margin: 10vh auto; font-size: 20px; display: none; flex-direction: column; align-items: center; direction: rtl; }
+        .spinner { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #fff; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 15px; background: #fff; }
+        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: center; }
+        th { background-color: #111d2b; color: #fff; font-weight: bold; } 
+        .table-responsive { overflow-x: auto; white-space: nowrap; border-radius: 5px; }
+
+        #menu-section, #induction-section, #equipment-section { display: none; }
+        .table-container { display: none; } 
+    </style>
+</head>
+<body>
+
+    <!-- شاشة تسجيل الدخول -->
+    <div id="login-section">
+        <div class="login-content">
+            <h1>HASSAN ALLAM</h1>
+            <div class="project-name">
+                SOUL Project C.R.U 1A Parcel 1&2
+            </div>
+            
+            <h2 id="login-title">Log In</h2>
+            
+            <p id="login-error">Incorrect Username or Password.</p>
+            
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            
+            <div class="login-btn-container">
+                <button class="login-btn" onclick="handleLogin()">Log In</button>
+            </div>
+        </div>
+        
+        <div class="login-footer">
+            <p>Welcome at Hassan Allam Holding</p>
+            <p>HSE Department</p>
+            <p class="developer-info">Developed by Mohamed Essam Ali</p>
+            <p class="developer-email">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="#555"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                Mohamed.EElsayed@hassanallam.com
+            </p>
+        </div>
+    </div>
+
+    <!-- شاشة التحميل -->
+    <div id="loading">
+        <div class="spinner"></div>
+        <span id="loading-text">جاري مزامنة البيانات من السيرفر، برجاء الانتظار...</span>
+    </div>
+
+    <!-- الشاشة الرئيسية -->
+    <div id="menu-section" class="app-container">
+        <h2>القائمة الرئيسية - قسم السلامة والصحة المهنية</h2>
+        
+        <button class="menu-btn induction-btn" onclick="showSection('induction')">
+            <div class="btn-title">البحث عن المحاضرة التعريفية - Search Induction 👥</div>
+            <div class="btn-subtitle">(يتم البحث بالاسم اوالرقم القومي او اسم المقاول)</div>
+        </button>
+        
+        <button class="menu-btn equipment-btn" onclick="showSection('equipment')">
+            <div class="btn-title">المعدات الثقيلة - Heavy Equipment 🚜</div>
+            <div class="btn-subtitle">(يتم البحث باسم السائق او نوع المعده او سريال الخاص بالمعده)</div>
+        </button>
+        
+        <button class="refresh-btn" style="width:100%; margin-top:10px; padding:15px; border-radius:6px; font-size:18px;" onclick="forceRefreshData()">🔄 تحديث قواعد البيانات من السيرفر</button>
+    </div>
+
+    <!-- شاشة الأفراد -->
+    <div id="induction-section" class="app-container">
+        <div class="header-controls">
+            <button class="back-btn" onclick="showSection('menu')">➔ العودة للقائمة</button>
+            <button class="refresh-btn" onclick="forceRefreshData()">🔄 تحديث البيانات</button>
+        </div>
+        <h2>البحث في بيانات الأفراد</h2>
+        <input type="text" id="search-induction" placeholder="ابحث بالاسم، الرقم القومي، أو اسم المقاول..." oninput="debouncedSearch('induction')">
+        <span class="search-hint">* لضمان سرعة الاستجابة، يتم عرض أول 100 نتيجة متطابقة فقط.</span>
+        <div class="table-responsive table-container" id="induction-table-container">
+            <table>
+                <thead id="induction-head"></thead>
+                <tbody id="induction-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- شاشة المعدات -->
+    <div id="equipment-section" class="app-container">
+        <div class="header-controls">
+            <button class="back-btn" onclick="showSection('menu')">➔ العودة للقائمة</button>
+            <button class="refresh-btn" onclick="forceRefreshData()">🔄 تحديث البيانات</button>
+        </div>
+        <h2>البحث في بيانات المعدات الثقيلة</h2>
+        <input type="text" id="search-equipment" placeholder="ابحث باسم السائق، نوع المعدة، أو السيريال..." oninput="debouncedSearch('equipment')">
+        <span class="search-hint">* لضمان سرعة الاستجابة، يتم عرض أول 100 نتيجة متطابقة فقط.</span>
+        <div class="table-responsive table-container" id="equipment-table-container">
+            <table>
+                <thead id="equipment-head"></thead>
+                <tbody id="equipment-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const allowedUsers = {
+            "mohamed": "12345",   
+            "admin": "admin2026", 
+            "hse": "0000"         
+        };
+
+        function handleLogin() {
+            const user = document.getElementById('username').value.trim().toLowerCase();
+            const pass = document.getElementById('password').value.trim();
+            const errorMsg = document.getElementById('login-error');
+
+            errorMsg.style.display = 'none';
+
+            if (allowedUsers[user] && allowedUsers[user] === pass) {
+                document.getElementById('login-section').style.display = 'none';
+                loadData(); 
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        const API_KEY = 'AIzaSyAE7db78XjlBu34ywJNbHphJabhC_xmuPI'; 
+        const INDUCTION_FOLDER_ID = '1MhGU8I6QgRhf3U0b2yYRm-cmkm3A6gfD'; 
+        const EQUIPMENT_FOLDER_ID = '1kCOrFCodbZzS1E08H95zpLWnRs2ffktf'; 
+
+        let excelHeadersInduction = [], excelDataInduction = []; 
+        let excelHeadersEquipment = [], excelDataEquipment = []; 
+
+        const headerTranslations = {
+            "no": "م", "sn": "م", "no.": "م", "name": "الاسم", "national id": "الرقم القومي", 
+            "title": "الوظيفة", "contractor": "المقاول / الشركة", "induction date": "تاريخ التعيين",
+            "date of birth": "تاريخ الميلاد", "age": "السن", "heavy equipment": "اسم المعدة", 
+            "type": "نوع المعدة", "swl": "أقصى حمل (SWL)", "model": "الموديل", 
+            "serial no": "السيريال نمبر", "examination date": "تاريخ الفحص",
+            "expire date": "تاريخ انتهاء المعايرة", "expire driver date": "تاريخ انتهاء الرخصة",
+            "name of driver": "اسم السائق", "state": "الحالة"
+        };
+
+        function showSection(sectionName) {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('menu-section').style.display = 'none';
+            document.getElementById('induction-section').style.display = 'none';
+            document.getElementById('equipment-section').style.display = 'none';
+            document.getElementById('search-induction').value = '';
+            document.getElementById('search-equipment').value = '';
+            document.getElementById('induction-table-container').style.display = 'none';
+            document.getElementById('equipment-table-container').style.display = 'none';
+
+            if(sectionName === 'menu') document.getElementById('menu-section').style.display = 'block';
+            if(sectionName === 'induction') document.getElementById('induction-section').style.display = 'block';
+            if(sectionName === 'equipment') document.getElementById('equipment-section').style.display = 'block';
+        }
+
+        async function fetchSheetFromFolder(folderId, targetSheetName = null) {
+            const cleanFolderId = folderId.includes('http') ? folderId.split('/').pop().split('?')[0] : folderId;
+            const folderUrl = `https://www.googleapis.com/drive/v3/files?q='${cleanFolderId}'+in+parents+and+trashed=false&fields=files(id,name)&key=${API_KEY}`;
+            const listResponse = await fetch(folderUrl);
+            const listData = await listResponse.json();
+            if (!listData.files || listData.files.length === 0) return null;
+
+            const fileUrl = `https://www.googleapis.com/drive/v3/files/${listData.files[0].id}?alt=media&key=${API_KEY}`;
+            const response = await fetch(fileUrl);
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+            
+            let sheetNameToRead = workbook.SheetNames[0]; 
+            if (targetSheetName) {
+                const foundSheet = workbook.SheetNames.find(name => name.toLowerCase().trim() === targetSheetName.toLowerCase().trim());
+                if (foundSheet) sheetNameToRead = foundSheet;
+            }
+            return XLSX.utils.sheet_to_json(workbook.Sheets[sheetNameToRead], { header: 1, defval: "", raw: false });
+        }
+
+        function renderHeaders() {
+            if(excelHeadersInduction.length > 0) {
+                document.getElementById('induction-head').innerHTML = `<tr>${excelHeadersInduction.map(header => `<th>${headerTranslations[String(header).toLowerCase().trim()] || header || '-'}</th>`).join('')}</tr>`;
+            }
+            if(excelHeadersEquipment.length > 0) {
+                document.getElementById('equipment-head').innerHTML = `<tr>${excelHeadersEquipment.map(header => `<th>${headerTranslations[String(header).toLowerCase().trim()] || header || '-'}</th>`).join('')}</tr>`;
+            }
+        }
+
+        async function loadData(forceRefresh = false) {
+            const loadingDiv = document.getElementById('loading');
+            const loadingText = document.getElementById('loading-text');
+            
+            loadingDiv.style.display = 'flex';
+            document.getElementById('menu-section').style.display = 'none';
+            document.getElementById('induction-section').style.display = 'none';
+            document.getElementById('equipment-section').style.display = 'none';
+
+            if (!forceRefresh && localStorage.getItem('hseAppData')) {
+                const cachedData = JSON.parse(localStorage.getItem('hseAppData'));
+                excelHeadersInduction = cachedData.indHeaders;
+                excelDataInduction = cachedData.indData;
+                excelHeadersEquipment = cachedData.eqHeaders;
+                excelDataEquipment = cachedData.eqData;
+                renderHeaders();
+                loadingDiv.style.display = 'none';
+                showSection('menu');
+                return;
+            }
+
+            loadingText.innerText = "جاري الاتصال بقاعدة البيانات وتحديث الملفات...";
+
+            try {
+                const p1 = fetchSheetFromFolder(INDUCTION_FOLDER_ID).then(rawData1 => {
+                    if (rawData1) {
+                        let hIndex = rawData1.findIndex(row => row.some(c => String(c).toLowerCase().trim() === "name"));
+                        if (hIndex === -1) hIndex = 1; 
+                        excelHeadersInduction = rawData1[hIndex] || []; 
+                        excelDataInduction = rawData1.slice(hIndex + 1).filter(r => r.length > 0 && r.some(c => String(c).trim() !== ""));
+                    }
+                }).catch(e => console.log(e));
+
+                const p2 = fetchSheetFromFolder(EQUIPMENT_FOLDER_ID, "Heavy Equipmets").then(rawData2 => {
+                    if (rawData2) {
+                        let hIndex = rawData2.findIndex(row => row.some(c => ['heavy equipment', 'type', 'serial no', 'model', 'sn', 'no'].some(k => String(c).toLowerCase().includes(k))));
+                        if (hIndex === -1) hIndex = 1; 
+                        excelHeadersEquipment = rawData2[hIndex] || []; 
+                        const rows = rawData2.slice(hIndex + 1);
+                        excelDataEquipment = [];
+                        rows.forEach(row => {
+                            if (row.length === 0 || !row.some(c => String(c).trim() !== "")) return;
+                            if (row.join(' ').toLowerCase().includes('out of site')) return; 
+                            excelDataEquipment.push(row);
+                        });
+                    }
+                }).catch(e => console.log(e));
+
+                await Promise.all([p1, p2]);
+                
+                localStorage.setItem('hseAppData', JSON.stringify({
+                    indHeaders: excelHeadersInduction, indData: excelDataInduction,
+                    eqHeaders: excelHeadersEquipment, eqData: excelDataEquipment
+                }));
+
+                renderHeaders();
+                loadingDiv.style.display = 'none';
+                showSection('menu');
+
+            } catch (error) {
+                loadingText.innerHTML = `<span style="color:#ff6b6b;">فشل التحديث. الرجاء التأكد من اتصال الإنترنت!</span>`;
+                setTimeout(() => { loadingDiv.style.display = 'none'; showSection('menu'); }, 3000);
+            }
+        }
+
+        function forceRefreshData() { loadData(true); }
+
+        function displayData(data, headers, tbodyId) {
+            const tbody = document.getElementById(tbodyId);
+            tbody.innerHTML = data.map(row => `<tr>${headers.map((h, i) => `<td>${row[i] !== undefined ? String(row[i]).trim() : ''}</td>`).join('')}</tr>`).join('');
+        }
+
+        let searchTimeout;
+        function debouncedSearch(type) {
+            clearTimeout(searchTimeout); 
+            searchTimeout = setTimeout(() => { performSearch(type); }, 300); 
+        }
+
+        function performSearch(type) {
+            const query = document.getElementById(`search-${type}`).value.toLowerCase().trim();
+            const data = type === 'induction' ? excelDataInduction : excelDataEquipment;
+            const headers = type === 'induction' ? excelHeadersInduction : excelHeadersEquipment;
+            const tbodyId = `${type}-body`;
+            const tableContainer = document.getElementById(`${type}-table-container`);
+
+            if (!query) { tableContainer.style.display = 'none'; return; }
+
+            let filteredData = [];
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].some(val => String(val).toLowerCase().includes(query))) {
+                    filteredData.push(data[i]);
+                    if (filteredData.length >= 100) break; 
+                }
+            }
+
+            tableContainer.style.display = 'block';
+
+            if (filteredData.length > 0) displayData(filteredData, headers, tbodyId);
+            else document.getElementById(tbodyId).innerHTML = `<tr><td colspan="${headers.length}" style="text-align:center; font-weight:bold; color:red;">لا توجد نتائج مطابقة للبحث</td></tr>`;
+        }
+    </script>
+</body>
+</html>
