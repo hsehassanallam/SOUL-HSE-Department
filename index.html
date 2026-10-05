@@ -177,6 +177,7 @@
         .spinner { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #fff; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* جدول الأفراد */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 15px; background: #fff; }
         th, td { border: 1px solid #dee2e6; padding: 12px; text-align: center; }
         th { background-color: #111d2b; color: #fff; font-weight: bold; } 
@@ -203,13 +204,8 @@
             direction: rtl;
         }
         
-        /* تلوين الكروت بالتبادل (لونين متناسقين مع ثيم الشركة) */
-        .equip-card:nth-child(odd) {
-            background-color: #ffffff; /* اللون الأول: أبيض */
-        }
-        .equip-card:nth-child(even) {
-            background-color: #f0f6fc; /* اللون الثاني: سماوي/رمادي فاتح جداً */
-        }
+        .equip-card:nth-child(odd) { background-color: #ffffff; }
+        .equip-card:nth-child(even) { background-color: #f0f6fc; }
 
         .equip-state {
             font-size: 18px;
@@ -230,12 +226,43 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px dashed #ddd;
-            padding: 10px 0;
-            font-size: 15px;
         }
         .equip-row:last-child { border-bottom: none; }
-        .equip-label { font-weight: bold; color: #111d2b; width: 45%; }
-        .equip-value { color: #005b9f; width: 55%; text-align: left; direction: ltr; font-weight: bold; }
+        
+        .equip-label { 
+            font-weight: bold; 
+            color: #111d2b; 
+            width: 45%; 
+            padding: 12px 10px;
+            border-left: 1px dashed #ddd; 
+            box-sizing: border-box;
+        }
+        .equip-value { 
+            color: #005b9f; 
+            width: 55%; 
+            text-align: left; 
+            direction: ltr; 
+            font-weight: bold; 
+            padding: 12px 10px;
+            box-sizing: border-box;
+        }
+
+        /* تظليل الخطر للأيام الأقل من 30 */
+        .danger-row {
+            background-color: #ffe8e8 !important; 
+        }
+        .danger-row .equip-value, .danger-row .equip-label {
+            color: #d13438 !important; 
+            font-weight: 900 !important; 
+        }
+
+        /* تظليل صف الملاحظات بلون رصاصي خفيف */
+        .comment-row {
+            background-color: #e9ecef !important;
+        }
+        .comment-row .equip-value {
+            color: #495057 !important; 
+        }
 
         #menu-section, #induction-section, #equipment-section { display: none; }
         .table-container { display: none; } 
@@ -294,6 +321,7 @@
         <button class="refresh-btn" style="width:100%; margin-top:10px; padding:15px; border-radius:6px; font-size:18px;" onclick="forceRefreshData()">🔄 تحديث قواعد البيانات من السيرفر</button>
     </div>
 
+    <!-- شاشة الأفراد -->
     <div id="induction-section" class="app-container">
         <div class="header-controls">
             <button class="back-btn" onclick="showSection('menu')">➔ العودة للقائمة</button>
@@ -317,12 +345,37 @@
         </div>
     </div>
 
+    <!-- شاشة المعدات -->
     <div id="equipment-section" class="app-container">
         <div class="header-controls">
             <button class="back-btn" onclick="showSection('menu')">➔ العودة للقائمة</button>
             <button class="refresh-btn" onclick="forceRefreshData()">🔄 تحديث البيانات</button>
         </div>
         <h2>البحث في بيانات المعدات الثقيلة</h2>
+        
+        <!-- الفلاتر المتقدمة للمعدات الثقيلة -->
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
+            <div style="flex: 1; min-width: 200px;">
+                <div class="checkbox-container" style="margin-bottom: 8px;">
+                    <input type="checkbox" id="equip-type-checkbox" onchange="toggleDropdown('equip-type')">
+                    <label for="equip-type-checkbox">البحث عن نوع معدة واحد</label>
+                </div>
+                <select id="equip-type-select" style="display: none; width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 15px; background: #fff;" onchange="performSearch('equipment')">
+                    <option value="">-- اختر اسم المعدة --</option>
+                </select>
+            </div>
+            
+            <div style="flex: 1; min-width: 200px;">
+                <div class="checkbox-container" style="margin-bottom: 8px;">
+                    <input type="checkbox" id="equip-contractor-checkbox" onchange="toggleDropdown('equip-contractor')">
+                    <label for="equip-contractor-checkbox">البحث عن مقاول واحد</label>
+                </div>
+                <select id="equip-contractor-select" style="display: none; width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 15px; background: #fff;" onchange="performSearch('equipment')">
+                    <option value="">-- اختر المقاول --</option>
+                </select>
+            </div>
+        </div>
+
         <input type="text" id="search-equipment" placeholder="ابحث باسم المقاول، السائق، أو السيريال نمبر..." oninput="debouncedSearch('equipment')">
         <span class="search-hint">* يتم عرض نتائج المعدات في شكل كروت تفصيلية.</span>
         
@@ -361,14 +414,76 @@
         const headerTranslations = {
             "no": "م", "sn": "م", "no.": "م", "name": "الاسم", "national id": "الرقم القومي", 
             "title": "الوظيفة", "contractor": "المقاول / الشركة", "induction date": "تاريخ التعيين",
-            "date of birth": "تاريخ الميلاد", "age": "السن", "heavy equipment": "اسم المعدة", 
-            "type": "نوع المعدة", "swl": "أقصى حمل (SWL)", "model": "الموديل", 
-            "serial no#": "السيريال نمبر", "serial no": "السيريال نمبر", 
-            "examination date": "تاريخ الفحص", "expire date": "تاريخ الانتهاء", 
-            "expire driver date": "تاريخ انتهاء رخصة السائق", "reminning days": "الأيام المتبقية",
-            "reminning day": "الأيام المتبقية", "name of driver": "اسم السائق", 
-            "state": "الحالة", "comments": "ملاحظات"
+            "date of birth": "تاريخ الميلاد", "age": "السن"
         };
+
+        // دالة ذكية لتنسيق العناوين 
+        function getFormattedLabel(h) {
+            let normH = String(h).toLowerCase().replace(/\s+/g, ' '); 
+            
+            if (normH.includes('heavy equipment') || normH.includes('اسم المعدة')) return "اسم المعدة (Heavy Equipment)";
+            if (normH.includes('type') || normH.includes('نوع')) return "نوع المعدة (Type)";
+            if (normH.includes('swl') || normH.includes('حمل')) return "أقصى حمل (SWL)";
+            if (normH.includes('model') || normH.includes('الموديل')) return "الموديل (Model)";
+            if (normH.includes('serial no') || normH.includes('السيريال')) return "السيريال نمبر (Serial No)";
+            if (normH.includes('examination date') || normH.includes('تاريخ الفحص')) return "تاريخ الفحص (Examination Date)";
+            if (normH.includes('expire driver date') || normH.includes('انتهاء رخصة')) return "تاريخ انتهاء رخصة السائق (Expire Driver Date)";
+            if (normH.includes('expire date') || (normH.includes('تاريخ الانتهاء') && !normH.includes('رخصة'))) return "تاريخ انتهاء المعايرة (Expire Date)";
+            
+            if (normH.includes('شهادة المعايرة') || normH.includes('reminning days') || normH.includes('remaining days')) return "الأيام المتبقية على شهادة المعايرة (Remaining Days)";
+            if (normH.includes('انتهاء الرخصة') || normH.includes('reminning day') || normH.includes('remaining day')) return "الأيام المتبقية على انتهاء الرخصة (Remaining Days)";
+            
+            if (normH.includes('name of driver') || normH.includes('اسم السائق')) return "اسم السائق (Driver Name)";
+            if (normH.includes('contractor') || normH.includes('المقاول')) return "المقاول (Contractor)";
+            if (normH.includes('comments') || normH.includes('ملاحظات')) return "ملاحظات (Comments)";
+            
+            return h; 
+        }
+
+        // إظهار أو إخفاء القوائم المنسدلة بناءً على الـ Checkbox
+        function toggleDropdown(type) {
+            const checkbox = document.getElementById(`${type}-checkbox`);
+            const select = document.getElementById(`${type}-select`);
+            if (checkbox.checked) {
+                select.style.display = 'block';
+            } else {
+                select.style.display = 'none';
+                select.value = ''; 
+            }
+            performSearch('equipment');
+        }
+
+        // استخراج الأنواع والمقاولين لملء القوائم المنسدلة تلقائياً
+        function populateEquipmentDropdowns() {
+            const typeSelect = document.getElementById('equip-type-select');
+            const contractorSelect = document.getElementById('equip-contractor-select');
+            
+            typeSelect.innerHTML = '<option value="">-- اختر اسم المعدة --</option>';
+            contractorSelect.innerHTML = '<option value="">-- اختر المقاول --</option>';
+
+            let typeIndex = excelHeadersEquipment.findIndex(h => String(h).toLowerCase().trim().includes('heavy equipment') || String(h).toLowerCase().trim().includes('اسم المعدة'));
+            let contractorIndex = excelHeadersEquipment.findIndex(h => String(h).toLowerCase().trim().includes('contractor') || String(h).toLowerCase().trim().includes('المقاول'));
+
+            let uniqueTypes = new Set();
+            let uniqueContractors = new Set();
+
+            excelDataEquipment.forEach(row => {
+                if (typeIndex !== -1 && row[typeIndex] !== undefined && String(row[typeIndex]).trim() !== '') {
+                    uniqueTypes.add(String(row[typeIndex]).trim());
+                }
+                if (contractorIndex !== -1 && row[contractorIndex] !== undefined && String(row[contractorIndex]).trim() !== '') {
+                    uniqueContractors.add(String(row[contractorIndex]).trim());
+                }
+            });
+
+            Array.from(uniqueTypes).sort().forEach(val => {
+                typeSelect.innerHTML += `<option value="${val}">${val}</option>`;
+            });
+            
+            Array.from(uniqueContractors).sort().forEach(val => {
+                contractorSelect.innerHTML += `<option value="${val}">${val}</option>`;
+            });
+        }
 
         function showSection(sectionName) {
             document.getElementById('login-section').style.display = 'none';
@@ -378,8 +493,13 @@
             document.getElementById('search-induction').value = '';
             document.getElementById('search-equipment').value = '';
             
-            const filterCheckbox = document.getElementById('filter-contractor-only');
-            if(filterCheckbox) filterCheckbox.checked = false;
+            const filterContractorOnly = document.getElementById('filter-contractor-only');
+            if(filterContractorOnly) filterContractorOnly.checked = false;
+
+            const equipTypeCheckbox = document.getElementById('equip-type-checkbox');
+            const equipContractorCheckbox = document.getElementById('equip-contractor-checkbox');
+            if(equipTypeCheckbox) { equipTypeCheckbox.checked = false; toggleDropdown('equip-type'); }
+            if(equipContractorCheckbox) { equipContractorCheckbox.checked = false; toggleDropdown('equip-contractor'); }
 
             document.getElementById('induction-table-container').style.display = 'none';
             document.getElementById('equipment-results-container').style.display = 'none';
@@ -430,6 +550,8 @@
                 excelDataInduction = cachedData.indData;
                 excelHeadersEquipment = cachedData.eqHeaders;
                 excelDataEquipment = cachedData.eqData;
+                
+                populateEquipmentDropdowns();
                 renderHeaders();
                 loadingDiv.style.display = 'none';
                 showSection('menu');
@@ -449,10 +571,6 @@
                         
                         excelHeadersInduction = rawData1[hIndex] || []; 
                         excelDataInduction = rawData1.slice(hIndex + 1).filter(r => r.length > 0 && r.some(c => String(c).trim() !== ""));
-                        
-                        if (excelDataInduction.length === 0 && forceRefresh) {
-                            alert("تنبيه: الكود اتصل بالملف بنجاح بس ملقاش داتا الأفراد! تأكد إن اسم الشيت في الإكسيل هو InductionSubContractor.");
-                        }
                     }
                 }).catch(e => console.log(e));
 
@@ -478,6 +596,7 @@
                     eqHeaders: excelHeadersEquipment, eqData: excelDataEquipment
                 }));
 
+                populateEquipmentDropdowns();
                 renderHeaders();
                 loadingDiv.style.display = 'none';
                 showSection('menu');
@@ -509,56 +628,94 @@
             const containerId = type === 'induction' ? 'induction-table-container' : 'equipment-results-container';
             const container = document.getElementById(containerId);
 
-            if (!query) { container.style.display = 'none'; return; }
+            let filteredData = [];
 
-            let isContractorFilterActive = false;
-            let contractorColIndex = -1;
-            
             if (type === 'induction') {
+                if (!query) { container.style.display = 'none'; return; }
+
+                let isContractorFilterActive = false;
+                let contractorColIndex = -1;
+                
                 const checkbox = document.getElementById('filter-contractor-only');
                 if (checkbox && checkbox.checked) {
                     isContractorFilterActive = true;
-                    contractorColIndex = headers.findIndex(h => {
-                        let txt = String(h).toLowerCase().trim();
-                        return txt.includes('contractor') || txt.includes('المقاول');
-                    });
+                    contractorColIndex = headers.findIndex(h => String(h).toLowerCase().trim().includes('contractor') || String(h).toLowerCase().trim().includes('المقاول'));
                 }
-            }
 
-            let filteredData = [];
-            for (let i = 0; i < data.length; i++) {
-                let isMatch = false;
+                for (let i = 0; i < data.length; i++) {
+                    let isMatch = false;
+                    if (isContractorFilterActive && contractorColIndex !== -1) {
+                        let cellValue = data[i][contractorColIndex];
+                        if (cellValue !== undefined && String(cellValue).toLowerCase().includes(query)) {
+                            isMatch = true;
+                        }
+                    } else {
+                        if (data[i].some(val => String(val).toLowerCase().includes(query))) {
+                            isMatch = true;
+                        }
+                    }
+
+                    if (isMatch) {
+                        filteredData.push(data[i]);
+                        if (filteredData.length >= 100) break; 
+                    }
+                }
                 
-                if (isContractorFilterActive && contractorColIndex !== -1) {
-                    let cellValue = data[i][contractorColIndex];
-                    if (cellValue !== undefined && String(cellValue).toLowerCase().includes(query)) {
-                        isMatch = true;
-                    }
-                } else {
-                    if (data[i].some(val => String(val).toLowerCase().includes(query))) {
-                        isMatch = true;
-                    }
-                }
-
-                if (isMatch) {
-                    filteredData.push(data[i]);
-                    if (filteredData.length >= 100) break; 
-                }
-            }
-
-            container.style.display = 'block';
-
-            if (type === 'induction') {
+                container.style.display = 'block';
                 if (filteredData.length > 0) displayData(filteredData, headers, 'induction-body');
                 else document.getElementById('induction-body').innerHTML = `<tr><td colspan="${headers.length}" style="text-align:center; font-weight:bold; color:red;">لا توجد نتائج مطابقة للبحث</td></tr>`;
-            } 
-            else if (type === 'equipment') {
+            
+            } else if (type === 'equipment') {
+                const typeCheckbox = document.getElementById('equip-type-checkbox');
+                const contractorCheckbox = document.getElementById('equip-contractor-checkbox');
+                const typeSelect = document.getElementById('equip-type-select');
+                const contractorSelect = document.getElementById('equip-contractor-select');
+
+                const isTypeActive = typeCheckbox && typeCheckbox.checked && typeSelect.value !== '';
+                const isContractorActive = contractorCheckbox && contractorCheckbox.checked && contractorSelect.value !== '';
+                
+                // لو مفيش أي بحث أو فلتر مختار، يتم إخفاء النتائج
+                if (!query && !isTypeActive && !isContractorActive) {
+                    container.style.display = 'none'; 
+                    return;
+                }
+
+                let typeIndex = headers.findIndex(h => String(h).toLowerCase().trim().includes('heavy equipment') || String(h).toLowerCase().trim().includes('اسم المعدة'));
+                let contractorIndex = headers.findIndex(h => String(h).toLowerCase().trim().includes('contractor') || String(h).toLowerCase().trim().includes('المقاول'));
+
+                for (let i = 0; i < data.length; i++) {
+                    let isMatch = true;
+
+                    // فلترة بنوع المعدة لو تم اختياره
+                    if (isTypeActive) {
+                        let cellVal = typeIndex !== -1 && data[i][typeIndex] !== undefined ? String(data[i][typeIndex]).trim() : '';
+                        if (cellVal !== typeSelect.value) isMatch = false;
+                    }
+
+                    // فلترة باسم المقاول لو تم اختياره
+                    if (isMatch && isContractorActive) {
+                        let cellVal = contractorIndex !== -1 && data[i][contractorIndex] !== undefined ? String(data[i][contractorIndex]).trim() : '';
+                        if (cellVal !== contractorSelect.value) isMatch = false;
+                    }
+
+                    // فلترة بالبحث النصي المكتوب
+                    if (isMatch && query) {
+                        if (!data[i].some(val => String(val).toLowerCase().includes(query))) {
+                            isMatch = false;
+                        }
+                    }
+
+                    if (isMatch) {
+                        filteredData.push(data[i]);
+                        if (filteredData.length >= 100) break; 
+                    }
+                }
+
+                container.style.display = 'block';
+
                 if (filteredData.length > 0) {
                     let html = '';
-                    const stateIndex = headers.findIndex(h => {
-                        let txt = String(h).toLowerCase().trim();
-                        return txt.includes('state') || txt.includes('الحالة');
-                    });
+                    const stateIndex = headers.findIndex(h => String(h).toLowerCase().trim().includes('state') || String(h).toLowerCase().trim().includes('الحالة'));
 
                     filteredData.forEach(row => {
                         let stateVal = stateIndex !== -1 && row[stateIndex] !== undefined ? String(row[stateIndex]).trim() : 'غير محدد';
@@ -573,11 +730,34 @@
                         headers.forEach((h, i) => {
                             if(i === stateIndex) return; 
                             
+                            let normH = String(h).toLowerCase().replace(/\s+/g, ' '); 
+                            if (normH === 'sn' || normH === 'no' || normH === 'no.' || normH === 'م') return;
+                            
                             let val = row[i] !== undefined && String(row[i]).trim() !== '' ? String(row[i]).trim() : '-';
-                            let headerName = headerTranslations[String(h).toLowerCase().trim()] || h || '-';
+                            let headerName = getFormattedLabel(h);
                             
                             if(headerName !== '-' && val !== '-') {
-                                html += `<div class="equip-row"><span class="equip-label">${headerName}</span><span class="equip-value">${val}</span></div>`;
+                                let isDanger = false;
+                                let isComment = false;
+                                
+                                if (normH.includes('شهادة المعايرة') || normH.includes('reminning days') || normH.includes('remaining days') ||
+                                    normH.includes('انتهاء الرخصة') || normH.includes('reminning day') || normH.includes('remaining day')) {
+                                    
+                                    let d = parseInt(val, 10);
+                                    if (!isNaN(d) && d < 30) {
+                                        isDanger = true;
+                                    }
+                                }
+
+                                if (normH.includes('comments') || normH.includes('ملاحظات')) {
+                                    isComment = true;
+                                }
+
+                                let rowClass = 'equip-row';
+                                if (isDanger) rowClass += ' danger-row';
+                                if (isComment) rowClass += ' comment-row';
+
+                                html += `<div class="${rowClass}"><span class="equip-label">${headerName}</span><span class="equip-value">${val}</span></div>`;
                             }
                         });
                         html += `</div>`;
