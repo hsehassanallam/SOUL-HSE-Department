@@ -163,7 +163,17 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 15px; background: #fff; }
         th, td { border: 1px solid #dee2e6; padding: 12px; text-align: center; }
         th { background-color: #111d2b; color: #fff; font-weight: bold; } 
-        .table-responsive { overflow-x: auto; white-space: nowrap; border-radius: 5px; }
+        
+        /* التعديل الخاص بجدول الموبايل */
+        .table-responsive { 
+            width: 100%; 
+            display: block; 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch; 
+            white-space: nowrap; 
+            border-radius: 5px; 
+            border: 1px solid #dee2e6; 
+        }
 
         #menu-section, #induction-section, #equipment-section { display: none; }
         .table-container { display: none; } 
@@ -368,7 +378,6 @@
             try {
                 const p1 = fetchSheetFromFolder(INDUCTION_FOLDER_ID, "InductionSubContractor").then(rawData1 => {
                     if (rawData1) {
-                        // بحث مرن جداً عن صف العناوين يتضمن الاسم أو الرقم القومي
                         let hIndex = rawData1.findIndex(row => row.some(c => {
                             let text = String(c).toLowerCase().trim();
                             return text.includes("name") || text.includes("الاسم") || text.includes("national id");
@@ -378,9 +387,8 @@
                         excelHeadersInduction = rawData1[hIndex] || []; 
                         excelDataInduction = rawData1.slice(hIndex + 1).filter(r => r.length > 0 && r.some(c => String(c).trim() !== ""));
                         
-                        // رسالة تنبيه لو مقراش داتا عشان نحدد المشكلة فين
                         if (excelDataInduction.length === 0 && forceRefresh) {
-                            alert("تنبيه: الكود اتصل بالملف بنجاح بس ملقاش داتا الأفراد! تأكد إن اسم الشيت من تحت في الإكسيل هو InductionSubContractor بالظبط، وإن العناوين في الصف التاني.");
+                            alert("تنبيه: الكود اتصل بالملف بنجاح بس ملقاش داتا الأفراد! تأكد إن اسم الشيت في الإكسيل هو InductionSubContractor.");
                         }
                     }
                 }).catch(e => console.log(e));
