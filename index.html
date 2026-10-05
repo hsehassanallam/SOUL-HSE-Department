@@ -156,6 +156,17 @@
         .app-container input[type="text"] { width: 100%; padding: 15px; margin: 10px 0 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 18px; }
         .search-hint { font-size: 13px; color: #555; margin-bottom: 20px; display: block; font-weight: bold; }
 
+        /* تصغير خط الكلام المكتوب داخل مربع البحث ليتناسب مع الموبايل */
+        .app-container input[type="text"]::placeholder {
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .app-container input[type="text"]::placeholder {
+                font-size: 11px; /* يصغر أكتر على شاشات الموبايل الصغيرة */
+            }
+        }
+
         #loading { text-align: center; color: #fff; font-weight: bold; margin: 10vh auto; font-size: 20px; display: none; flex-direction: column; align-items: center; direction: rtl; }
         .spinner { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #fff; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
