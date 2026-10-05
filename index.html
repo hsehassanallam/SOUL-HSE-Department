@@ -259,7 +259,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
         const allowedUsers = {
             "mohamed": "12345",   
             "admin": "admin2026", 
@@ -327,7 +327,7 @@
             
             let sheetNameToRead = workbook.SheetNames[0]; 
             if (targetSheetName) {
-                const foundSheet = workbook.SheetNames.find(name => name.toLowerCase().trim() === targetSheetName.toLowerCase().trim());
+                const foundSheet = workbook.SheetNames.find(name => name.replace(/\s+/g, '').toLowerCase() === targetSheetName.replace(/\s+/g, '').toLowerCase());
                 if (foundSheet) sheetNameToRead = foundSheet;
             }
             return XLSX.utils.sheet_to_json(workbook.Sheets[sheetNameToRead], { header: 1, defval: "", raw: false });
@@ -366,12 +366,22 @@
             loadingText.innerText = "جاري الاتصال بقاعدة البيانات وتحديث الملفات...";
 
             try {
-                const p1 = fetchSheetFromFolder(INDUCTION_FOLDER_ID).then(rawData1 => {
+                const p1 = fetchSheetFromFolder(INDUCTION_FOLDER_ID, "InductionSubContractor").then(rawData1 => {
                     if (rawData1) {
-                        let hIndex = rawData1.findIndex(row => row.some(c => String(c).toLowerCase().trim() === "name"));
+                        // بحث مرن جداً عن صف العناوين يتضمن الاسم أو الرقم القومي
+                        let hIndex = rawData1.findIndex(row => row.some(c => {
+                            let text = String(c).toLowerCase().trim();
+                            return text.includes("name") || text.includes("الاسم") || text.includes("national id");
+                        }));
                         if (hIndex === -1) hIndex = 1; 
+                        
                         excelHeadersInduction = rawData1[hIndex] || []; 
                         excelDataInduction = rawData1.slice(hIndex + 1).filter(r => r.length > 0 && r.some(c => String(c).trim() !== ""));
+                        
+                        // رسالة تنبيه لو مقراش داتا عشان نحدد المشكلة فين
+                        if (excelDataInduction.length === 0 && forceRefresh) {
+                            alert("تنبيه: الكود اتصل بالملف بنجاح بس ملقاش داتا الأفراد! تأكد إن اسم الشيت من تحت في الإكسيل هو InductionSubContractor بالظبط، وإن العناوين في الصف التاني.");
+                        }
                     }
                 }).catch(e => console.log(e));
 
